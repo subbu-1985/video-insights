@@ -27,7 +27,7 @@ def video_insight_detail(request, pk):
     video = get_object_or_404(VideoAnalysis, pk=pk)
 
     # ---------------- RUN AI ONCE ----------------
-    if not video.summary or "API_STALLED" in (video.transcript or ""):
+    if not video.ai_processed and not video.ai_failed:
         try:
             # -------- SOURCE --------
             if video.video_file:
@@ -71,10 +71,15 @@ Return exactly ONE JSON object:
             video.keywords = data.get("keywords", [])
             video.objects_detected = data.get("objects", [])
             video.activity_type = data.get("activity", "General")
+            video.ai_processed = True
+            video.ai_failed = False
             video.save()
 
         except Exception as e:
             print("PIPELINE_ERROR:", e)
+            video.transcript = "API_STALLED"
+            video.ai_failed = True
+            video.ai_processed = False
             video.transcript = "API_STALLED"
             video.save()
 

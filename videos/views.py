@@ -32,36 +32,42 @@ def user_dashboard(request):
         'stats': stats
     })
 
+from .utils import download_youtube_video
+from django.core.files import File
+from django.conf import settings
+
 @login_required
 def upload_video(request):
-    """Fulfills Feature 1: Neural Ingestion Pipeline with Security Filters"""
     if request.method == 'POST':
-        title = request.POST.get('title', 'Neural_Analysis_Session').strip()
+        title = request.POST.get('title', '').strip()
         video_file = request.FILES.get('video_file')
         youtube_url = request.POST.get('youtube_url')
 
         if not video_file and not youtube_url:
-            messages.error(request, "Deployment Failed: No video source detected.")
+            messages.error(request, "No video source provided.")
             return redirect('upload_video')
 
-        # File Security Extension Filter
         if video_file:
             ext = os.path.splitext(video_file.name)[1].lower()
             if ext not in ['.mp4', '.mov', '.avi', '.webm', '.mpeg']:
-                messages.error(request, "Invalid Format: Use high-fidelity MP4/MOV streams.")
+                messages.error(request, "Invalid video format.")
                 return redirect('upload_video')
 
-        VideoAnalysis.objects.create(
+        video = VideoAnalysis.objects.create(
             user=request.user,
             title=title or "Untitled Node",
-            video_file=video_file,
-            youtube_url=youtube_url
+            video_file=video_file if video_file else None,
+            youtube_url=youtube_url if youtube_url else None
         )
-        
-        messages.success(request, f"Neural link established for: {title}. Pipeline active.")
+
+        messages.success(
+            request,
+            f"Pipeline initialized successfully for: {video.title}"
+        )
         return redirect('video_list')
-        
+
     return render(request, 'videos/upload_video.html')
+
 
 @login_required
 def video_list(request):

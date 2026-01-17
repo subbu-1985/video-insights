@@ -32,12 +32,12 @@
                 </video>
             {% elif video.embed_url %}
                 <div class="aspect-video w-full rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-                    <iframe width="100%" height="100%"
-                            src="{{ video.embed_url }}"
-                            frameborder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen>
-                    </iframe>
+                        <iframe width="100%" height="100%"
+                                src="{{ video.embed_url }}"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                        </iframe>
                 </div>
             {% else %}
                 <div class="aspect-video bg-black flex flex-col items-center justify-center rounded-2xl border border-white/10">
@@ -150,7 +150,13 @@
                     {{ video.summary|default:"Synthesizing summary node..." }}
                 </p>
             </div>
+            {% if video.ai_failed %}
+                <p class="text-[10px] text-red-400 mt-4 uppercase tracking-widest">
+                    AI processing paused due to quota limits. Please retry later.
+                </p>
+            {% endif %}
         </div>
+        
 
         <a href="{% url 'ai_chatbot' %}"
            class="block w-full glow-button bg-gradient-to-r from-[var(--accent-purple)] to-[#5000b8] text-white text-center py-5 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-[0_0_20px_rgba(112,0,255,0.2)]">

@@ -24,6 +24,8 @@ class VideoAnalysis(models.Model):
     activity_type = models.CharField(max_length=100, default="General Analysis")
     
     created_at = models.DateTimeField(auto_now_add=True)
+    ai_processed = models.BooleanField(default=False)
+    ai_failed = models.BooleanField(default=False)
 
     def __str__(self):
         # FIXED: Using email because username is None in your custom model
