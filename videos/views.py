@@ -47,27 +47,41 @@ def upload_video(request):
             messages.error(request, "No video source provided.")
             return redirect('upload_video')
 
-        if video_file:
-            ext = os.path.splitext(video_file.name)[1].lower()
-            if ext not in ['.mp4', '.mov', '.avi', '.webm', '.mpeg']:
-                messages.error(request, "Invalid video format.")
-                return redirect('upload_video')
-
+        # Create the initial record
         video = VideoAnalysis.objects.create(
             user=request.user,
-            title=title or "Untitled Node",
-            video_file=video_file if video_file else None,
-            youtube_url=youtube_url if youtube_url else None
+            title=title or "Untitled Node"
         )
 
-        messages.success(
-            request,
-            f"Pipeline initialized successfully for: {video.title}"
-        )
+        # CASE 1: Direct Upload
+        if video_file:
+            video.video_file = video_file
+            video.save()
+        
+        # CASE 2: The YouTube "Download & Sync" Approach
+        elif youtube_url:
+            try:
+                # Use your utility to download the file to a temp path
+                downloaded_path = download_youtube_video(youtube_url)
+                
+                # Open the downloaded file and save it to the Django Model
+                with open(downloaded_path, 'rb') as f:
+                    django_file = File(f)
+                    video.video_file.save(f"{video.id}_sync.mp4", django_file, save=True)
+                
+                # Clean up the temporary file from your server after saving to Media
+                if os.path.exists(downloaded_path):
+                    os.remove(downloaded_path)
+                    
+            except Exception as e:
+                video.delete() # Clean up the record if download fails
+                messages.error(request, f"Stream Sync Failed: {str(e)}")
+                return redirect('upload_video')
+
+        messages.success(request, f"Pipeline initialized: {video.title}")
         return redirect('video_list')
 
     return render(request, 'videos/upload_video.html')
-
 
 @login_required
 def video_list(request):
