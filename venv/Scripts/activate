@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\ABHIGNA\Downloads\Video-Insights-Detection\venv"
+VIRTUAL_ENV="E:\Video-Insights-Detection\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
